@@ -1,13 +1,13 @@
 import Lean
 
 def Set (α : Type u) := α → Prop
-def Set.in (s : Set α) (a : α) := s a
+def Set.mem (s : Set α) (a : α) := s a
 
 namespace Set
 
-notation:50 a " ∈ " s:50 => Set.in s a
+notation:50 a " ∈ " s:50 => Set.mem s a
 
-notation:55 a " ∉ " s:55 => ¬Set.in s a
+notation:55 a " ∉ " s:55 => ¬Set.mem s a
 
 def pred (p : α → Prop) : Set α := p
 
@@ -28,10 +28,10 @@ def subseteq (s₁ s₂ : Set α) : Prop :=
 
 infix:75 " ⊆ " => Set.subseteq
 
-def comp (s₁ s₂ : Set α) : Set α :=
+def sdiff (s₁ s₂ : Set α) : Set α :=
   { a | a ∈ s₁ ∧ a ∉ s₂ }
 
-infix:80 " \\ " => Set.subseteq
+infix:80 " \\ " => Set.sdiff
 
 def empty : Set α := λ x => False
 
@@ -108,16 +108,14 @@ theorem sub_eq_cup {A B : Set α} : A ⊆ B ↔ A ∪ B = B := by
     case mp =>
       intro xiaob
       apply (Or.elim xiaob) (seq x)
-      intro b
-      exact b
+      exact id
     case mpr =>
       intro xib
       exact Or.inr xib
   case mpr =>
     rw [eqr]
     intro xs x xia
-    have h : x ∈ B := Iff.mp (xs x) (Or.inl xia)
-    exact h
+    exact Iff.mp (xs x) (Or.inl xia)
 
 theorem not_cap_eq_cap {A B : Set α} : A \ (A ∩ B) = A \ B := sorry
 
