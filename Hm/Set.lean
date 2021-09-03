@@ -1,9 +1,10 @@
 import Lean
 
 def Set (α : Type u) := α → Prop
-def Set.mem (s : Set α) (a : α) := s a
 
 namespace Set
+
+def mem (s : Set α) (a : α) := s a
 
 notation:50 a " ∈ " s:50 => Set.mem s a
 
@@ -28,6 +29,11 @@ def subseteq (s₁ s₂ : Set α) : Prop :=
 
 infix:75 " ⊆ " => Set.subseteq
 
+def subset (s₁ s₂ : Set α) : Prop :=
+  s₁ ⊆ s₂ ∧ s₁ ≠ s₂
+
+infix:75 " ⊂ " => Set.subset
+
 def sdiff (s₁ s₂ : Set α) : Set α :=
   { a | a ∈ s₁ ∧ a ∉ s₂ }
 
@@ -37,53 +43,43 @@ def empty : Set α := λ x => False
 
 notation (priority := high) "∅" => empty
 
+def univ : Set α := λ x => True
+
+def compl (s₁ : Set α) : Set α := univ \ s₁
+
+notation s "ᶜ" => compl s
+
 theorem setext {A B : Set α} (h : ∀ x, x ∈ A ↔ x ∈ B) : A = B :=
   funext (λ x => propext (h x))
 
-theorem inter_self (A : Set α) : A ∩ A = A :=
+theorem inter_self_eq_self {A : Set α} : A ∩ A = A :=
   setext λ x => Iff.intro
     (λ ⟨h, _⟩ => h)
     (λ h => ⟨h, h⟩)
 
-theorem inter_empty (A : Set α) : A ∩ ∅ = ∅ :=
+theorem inter_empty_eq_empty {A : Set α} : A ∩ ∅ = ∅ :=
   setext λ x => Iff.intro
     (λ ⟨_, h⟩ => h)
     (λ h => False.elim h)
 
-theorem empty_inter (A : Set α) : ∅ ∩ A = ∅ :=
-  setext λ x => Iff.intro
-    (λ ⟨h, _⟩ => h)
-    (λ h => False.elim h)
+theorem inter_comm {A B : Set α} (h : x ∈ A ∩ B) : x ∈ B ∩ A :=
+  And.intro h.right h.left
 
-theorem inter.comm (A B : Set α) : A ∩ B = B ∩ A :=
-  setext λ x => Iff.intro
-    (λ ⟨h₁, h₂⟩ => ⟨h₂, h₁⟩)
-    (λ ⟨h₁, h₂⟩ => ⟨h₂, h₁⟩)
+theorem union_comm {A B : Set α} (h : x ∈ A ∪ B) : x ∈ B ∪ A := by
+  apply Or.elim h
+  case left =>
+    intro xia
+    exact Or.inr xia
+  case right =>
+    intro xib
+    exact Or.inl xib
 
-end Set
-
--- Credits Henderik
-theorem eq (A B : Set α) : (∀ x : α, x ∈ A ↔ x ∈ B) ↔ A = B := by
-  apply Iff.intro
-  case mp => 
-    intro ablr
-    funext x
-    apply propext
-    exact ablr x
-  case mpr =>
-    intro aeqb x
-    rw [aeqb]
-    exact Iff.refl _
-
-theorem eqr (A B : Set α) :  A = B ↔ (∀ x : α, x ∈ A ↔ x ∈ B) := by
-  apply Iff.symm
-  apply eq
-
-theorem sub_eq_cap {A B : Set α} : A ⊆ B ↔ A ∩ B = A := by
+theorem subseteq_iff_inter_eq {A B : Set α} : A ⊆ B ↔ A ∩ B = A := by
   apply Iff.intro
   case mp =>
-    rw [eqr]
-    intro seq x
+    intro seq
+    apply setext
+    intro x
     apply Iff.intro
     case mp =>
       intro xiab
@@ -93,16 +89,15 @@ theorem sub_eq_cap {A B : Set α} : A ⊆ B ↔ A ∩ B = A := by
       have h : x ∈ B := (seq x) x₂
       exact And.intro x₂ h
   case mpr =>
-    rw [eqr]
     intro xs x xia
-    have h : x ∈ A ∩ B := Iff.mpr (xs x) xia
-    exact And.right h
+    rw [xs.symm] at xia
+    exact And.right xia
 
-theorem sub_eq_cup {A B : Set α} : A ⊆ B ↔ A ∪ B = B := by
+theorem subseteq_iff_union_eq {A B : Set α} : A ⊆ B ↔ A ∪ B = B := by
   apply Iff.intro
   case mp =>
     intro seq
-    rw [eqr]
+    apply setext
     intro x
     apply Iff.intro
     case mp =>
@@ -113,12 +108,24 @@ theorem sub_eq_cup {A B : Set α} : A ⊆ B ↔ A ∪ B = B := by
       intro xib
       exact Or.inr xib
   case mpr =>
-    rw [eqr]
     intro xs x xia
-    exact Iff.mp (xs x) (Or.inl xia)
+    have h : x ∈ A ∪ B := Or.inl xia
+    rw [xs] at h
+    exact h
 
-theorem not_cap_eq_cap {A B : Set α} : A \ (A ∩ B) = A \ B := sorry
+theorem sdiff_inter_eq_sdiff {A B : Set α} : A \ (A ∩ B) = A \ B := by
+  apply setext
+  intro x
+  apply Iff.intro <;>
+  {
+    intro h;
+    apply And.intro;
+    case left =>
+      exact h.left
+    case right =>
+      intro h₂
+      apply h.right
+      first | exact And.intro h.left h₂ | exact h₂.right
+  }
 
--- example for relation syntax
-theorem ex3 : (10000, 300000) ∈ { (x, y) | x < y } ∩ { (x, y) | x = 10000 } :=
-  sorry
+end Set  
