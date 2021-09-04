@@ -13,6 +13,7 @@ notation:55 a " ∉ " s:55 => ¬Set.mem s a
 def pred (p : α → Prop) : Set α := p
 
 notation "{" a "|" p "}" => Set.pred (λ a => p)
+-- TODO look into how we can implement notation like { a ∈ S | p a }
 
 def union (s₁ s₂ : Set α) : Set α :=
   { a | a ∈ s₁ ∨ a ∈ s₂ }
@@ -47,7 +48,11 @@ def univ : Set α := λ x => True
 
 def compl (s₁ : Set α) : Set α := univ \ s₁
 
-notation s "ᶜ" => compl s
+postfix:max "ᶜ" => compl
+
+def powerset (s : Set α) : Set (Set α) := {t | t ⊆ s}
+
+prefix:60 "𝒫" => powerset
 
 theorem setext {A B : Set α} (h : ∀ x, x ∈ A ↔ x ∈ B) : A = B :=
   funext (λ x => propext (h x))
@@ -62,17 +67,21 @@ theorem inter_empty_eq_empty {A : Set α} : A ∩ ∅ = ∅ :=
     (λ ⟨_, h⟩ => h)
     (λ h => False.elim h)
 
-theorem inter_comm {A B : Set α} (h : x ∈ A ∩ B) : x ∈ B ∩ A :=
-  And.intro h.right h.left
+theorem inter_comm {A B : Set α} : A ∩ B = B ∩ A :=
+  setext λ x => Iff.intro
+    (λ ⟨l, r⟩ => ⟨r, l⟩)
+    (λ ⟨l, r⟩ => ⟨r, l⟩)
 
-theorem union_comm {A B : Set α} (h : x ∈ A ∪ B) : x ∈ B ∪ A := by
-  apply Or.elim h
-  case left =>
-    intro xia
-    exact Or.inr xia
-  case right =>
-    intro xib
-    exact Or.inl xib
+theorem union_comm {A B : Set α} : A ∪ B = B ∪ A := by
+  apply setext
+  intro x
+  apply Iff.intro <;>
+  {
+    intro h;
+    cases h with
+    | inl h2 => exact Or.inr h2
+    | inr h2 => exact Or.inl h2
+  }
 
 theorem subseteq_iff_inter_eq {A B : Set α} : A ⊆ B ↔ A ∩ B = A := by
   apply Iff.intro
@@ -127,5 +136,15 @@ theorem sdiff_inter_eq_sdiff {A B : Set α} : A \ (A ∩ B) = A \ B := by
       apply h.right
       first | exact And.intro h.left h₂ | exact h₂.right
   }
+
+theorem any_subseteq_univ (A : Set α) : A ⊆ univ := λ _ _ => True.intro
+
+def cartesian {α: Type u} {β : Type v} (s₁ : Set α) (s₂ : Set β) : Set (α × β) :=
+  {t | t.fst ∈ s₁ ∧ t.snd ∈ s₂}
+  
+theorem any_subseteq_cartesian_univ_univ (A : Set (α × α)) :  A ⊆ cartesian Set.univ Set.univ := by
+  intro x xiA
+  simp only [cartesian]
+  apply And.intro <;> exact True.intro
 
 end Set  
