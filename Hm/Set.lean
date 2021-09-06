@@ -67,6 +67,25 @@ theorem inter_empty_eq_empty {A : Set α} : A ∩ ∅ = ∅ :=
     (λ ⟨_, h⟩ => h)
     (λ h => False.elim h)
 
+theorem eq_empty_iff_all_notin (A : Set α) : (A = ∅) ↔ (∀ x, x ∉ A) := by
+  apply Iff.intro
+  case mp =>
+    intro hA x xiA
+    rw [hA] at xiA
+    exact xiA
+  case mpr =>
+    intro hA
+    apply setext
+    intro x
+    apply Iff.intro
+    case h.mp =>
+      intro xiA
+      exact hA x xiA
+    case h.mpr =>
+      intro xiE
+      exact False.elim $ xiE
+
+
 theorem inter_comm {A B : Set α} : A ∩ B = B ∩ A :=
   setext λ x => Iff.intro
     (λ ⟨l, r⟩ => ⟨r, l⟩)
