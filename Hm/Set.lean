@@ -54,6 +54,34 @@ def powerset (s : Set α) : Set (Set α) := {t | t ⊆ s}
 
 prefix:60 "𝒫" => powerset
 
+-- This section provides usability lemmas so people don't have to
+-- see the guts of the definition they are working with.
+section usability
+
+theorem mem_union (x : α) (A B : Set α) : x ∈ A ∪ B ↔ x ∈ A ∨ x ∈ B := Iff.rfl
+theorem mem_union_of_left (x : α) (A B : Set α) : x ∈ A → x ∈ A ∪ B := Or.inl
+theorem mem_union_of_right (x : α) (A B : Set α) : x ∈ B → x ∈ A ∪ B := Or.inr
+
+theorem mem_inter (x : α) (A B : Set α) : x ∈ A ∩ B ↔ x ∈ A ∧ x ∈ B := Iff.rfl
+theorem mem_inter_of_left_right (x : α) (A B : Set α) : x ∈ A → x ∈ B → x ∈ A ∩ B := And.intro
+
+theorem subseteq_def (A B : Set α) : A ⊆ B ↔ (∀ x, x ∈ A → x ∈ B) := Iff.rfl
+
+theorem subsete_def (A B : Set α) : A ⊂ B ↔ (A ⊆ B ∧ A ≠ B) := Iff.rfl
+
+theorem mem_sdiff (x : α) (A B : Set α) : x ∈ A \ B ↔ x ∈ A ∧ x ∉ B := Iff.rfl
+
+theorem not_mem_empty (x : α) : x ∉ ∅ := id
+
+theorem mem_univ (x : α) : x ∈ univ := True.intro
+
+theorem mem_compl (x : α) (A : Set α) : x ∈ Aᶜ ↔ x ∉ A :=
+  Iff.intro (λ h1 h2 => h1.right h2) (λ h => ⟨True.intro, h⟩)
+
+theorem mem_powerset (A B : Set α) : A ∈ (𝒫 B) ↔ A ⊆ B := Iff.rfl
+
+end usability
+
 theorem setext {A B : Set α} (h : ∀ x, x ∈ A ↔ x ∈ B) : A = B :=
   funext (λ x => propext (h x))
 
@@ -162,8 +190,7 @@ def cartesian {α: Type u} {β : Type v} (s₁ : Set α) (s₂ : Set β) : Set (
   {t | t.fst ∈ s₁ ∧ t.snd ∈ s₂}
   
 theorem any_subseteq_cartesian_univ_univ (A : Set (α × α)) :  A ⊆ cartesian Set.univ Set.univ := by
-  intro x xiA
-  simp only [cartesian]
+  intro _ _
   apply And.intro <;> exact True.intro
 
 end Set  
