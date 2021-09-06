@@ -6,8 +6,8 @@ open Set
 Technically speaking relations also require a carrier set + a proof
 that they are ⊆ carrier. However most applications we will every see
 don't really care about the carrier set and just assume it to be
-univ α β. Since always working with teh carrier set + proof in a structure
-would clutter the implementation unnecessarily we will leave it out here.
+univ (α × β). Since always working with the carrier set + proof in a structure
+would clutter the implementation unnecessarily.
 -/
 def Relation (α : Type u) (β : Type v) := Set (α × β)
 def RelationOn (α : Type u) := Relation α α
@@ -20,7 +20,6 @@ instance FunctionToRelationOn : Coe (α → α → Prop) (RelationOn α) where
 
 section RelationProperties
 
-
 variable {α : Type _} (R : RelationOn α)
 
 def reflexive := ∀ a : α, (a, a) ∈ R
@@ -30,10 +29,10 @@ def transitive := ∀ (a b c : α), (a, b) ∈ R ∧ (b, c) ∈ R → (a, c) ∈
 def antisymmetrical := ∀ (a b : α),  (a, b) ∈ R ∧ (b, a) ∈ R → a = b
 def asymmetrical := ∀ (a b : α), (a, b) ∈ R → (b, a) ∉ R
 
-class EquivalenceRel {α : Type _} (rel : RelationOn α) where
-  reflexive : reflexive rel
-  symmetrical : symmetrical rel
-  transitive : transitive rel
+class EquivalenceRel {α : Type _} (R : RelationOn α) where
+  reflexive : reflexive R
+  symmetrical : symmetrical R
+  transitive : transitive R
 
 /-
 This instance allows us to use ≈ (denoted with \~~) when we know there
@@ -41,14 +40,13 @@ exists an equivalence relation on α.
 variable (α : Type u) (a b : α) (R : RelationOn α) [EquivalenceRel R]
 #check a ≈ b
 -/
-instance {rel : RelationOn α} [EquivalenceRel rel] : HasEquiv α where
-  Equiv := λ a b => (a, b) ∈ rel
+instance {R : RelationOn α} [EquivalenceRel R] : HasEquiv α where
+  Equiv := λ a b => (a, b) ∈ R
 
-def equivalence_class {α : Type u} (R : RelationOn α) [EquivalenceRel R] (a : α) : Set α := {x | a ≈ x }
-def id_rel (α : Type u) : RelationOn α := { t | t.fst = t.snd }
+def equivalence_class (R : RelationOn α) [EquivalenceRel R] (a : α) : Set α := {x | a ≈ x }
 
-theorem equivalence_classes_disjunct {α : Type u} (R: RelationOn α) [eqr: EquivalenceRel R] (a b : α) (a_nequiv_b: ¬(a ≈ b)) : equivalence_class R a ∩ equivalence_class R b = ∅ := by
-  apply (eq_empty_iff_all_notin _).mpr
+theorem equivalence_classes_disjunct (R: RelationOn α) [eqr: EquivalenceRel R] (a b : α) (a_nequiv_b: ¬(a ≈ b)) : equivalence_class R a ∩ equivalence_class R b = ∅ := by
+  apply eq_empty_iff_all_notin.mpr
   intro x hx
   have a_equiv_x : a ≈ x := hx.left
   have b_equiv_x : b ≈ x := hx.right
@@ -56,14 +54,16 @@ theorem equivalence_classes_disjunct {α : Type u} (R: RelationOn α) [eqr: Equi
   have a_equiv_b : a ≈ b := eqr.transitive a x b ⟨a_equiv_x, x_equiv_b⟩
   exact a_nequiv_b a_equiv_b
 
+def id_rel (α : Type u) : RelationOn α := { t | t.fst = t.snd }
+
+theorem mem_id_rel (a b : α) : (a, b) ∈ id_rel α ↔ a = b := Iff.rfl
+
 theorem id_rel_reflexive (α : Type u) : reflexive $ id_rel α := λ _ => rfl
   
 end RelationProperties
 
 -- Thanks to the coercion above we can now denote theorems such as
-example : reflexive (Nat.le : RelationOn Nat) := by
-  intro _
-  exact Nat.le.refl
+example : reflexive (Nat.le : RelationOn Nat) := λ _ => Nat.le.refl
 
 namespace Relation
 

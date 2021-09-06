@@ -60,8 +60,8 @@ class StrictTotalOrder {α : Type _} (rel : RelationOn α) extends StrictPartial
 
 namespace PartialOrder
 
-def minimum {α : Type u} (R : RelationOn α) [PartialOrder R] (x : α) : Prop := ¬(∃ y, y ≠ x ∧ y ≼ x)
-def topoligical_sorting {α : Type u} (TR : RelationOn α) [TotalOrder TR] (R : RelationOn α) [PartialOrder R] : Prop :=
+def minimum (R : RelationOn α) [PartialOrder R] (x : α) : Prop := ¬(∃ y, y ≠ x ∧ y ≼ x)
+def topoligical_sorting (TR : RelationOn α) [TotalOrder TR] (R : RelationOn α) [PartialOrder R] : Prop :=
   R ⊆ TR
   
 inductive Chain {α : Type u} (R: RelationOn α) [PartialOrder R] : List α → Prop where
@@ -91,8 +91,8 @@ end PartialOrder
 namespace StrictPartialOrder
 
 
-def minimum {α : Type u} (R : RelationOn α) [StrictPartialOrder R] (x : α) : Prop := ¬(∃y, y ≠ x ∧ y ≺ x)
-def topoligical_sorting {α : Type u} (TR : RelationOn α) [StrictTotalOrder TR] (R : RelationOn α) [StrictPartialOrder R] : Prop :=
+def minimum (R : RelationOn α) [StrictPartialOrder R] (x : α) : Prop := ¬(∃y, y ≠ x ∧ y ≺ x)
+def topoligical_sorting (TR : RelationOn α) [StrictTotalOrder TR] (R : RelationOn α) [StrictPartialOrder R] : Prop :=
   R ⊆ TR
 
 inductive Chain {α : Type u} (R: RelationOn α) [StrictPartialOrder R] : List α → Prop where

@@ -95,7 +95,7 @@ theorem inter_empty_eq_empty {A : Set α} : A ∩ ∅ = ∅ :=
     (λ ⟨_, h⟩ => h)
     (λ h => False.elim h)
 
-theorem eq_empty_iff_all_notin (A : Set α) : (A = ∅) ↔ (∀ x, x ∉ A) := by
+theorem eq_empty_iff_all_notin {A : Set α} : (A = ∅) ↔ (∀ x, x ∉ A) := by
   apply Iff.intro
   case mp =>
     intro hA x xiA
@@ -186,7 +186,7 @@ theorem sdiff_inter_eq_sdiff {A B : Set α} : A \ (A ∩ B) = A \ B := by
 
 theorem any_subseteq_univ (A : Set α) : A ⊆ univ := λ _ _ => True.intro
 
-def cartesian {α: Type u} {β : Type v} (s₁ : Set α) (s₂ : Set β) : Set (α × β) :=
+def cartesian (s₁ : Set α) (s₂ : Set β) : Set (α × β) :=
   {t | t.fst ∈ s₁ ∧ t.snd ∈ s₂}
   
 theorem any_subseteq_cartesian_univ_univ (A : Set (α × α)) :  A ⊆ cartesian Set.univ Set.univ := by
