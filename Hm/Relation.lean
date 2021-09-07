@@ -77,4 +77,22 @@ def comp : Relation α γ := { t | ∃ a, (t.fst, a) ∈ R ∧ (a, t.snd) ∈ S}
 
 infixr:60 "∘" => comp
 
+theorem comp_comm {R₁ R₂ : Set α} : (∃ x, R₁ x ∧ R₂ x) → ∃ x, R₂ x ∧ R₁ x := by
+  intro h
+  cases h with
+  | intro x hR₂ =>
+    cases hR₂ with
+    | intro hR₁ hR₂ =>
+      exists x
+      constructor <;> assumption
+
+theorem comp_inverse_distrib {R₁ R₂: RelationOn α} : (R₁∘R₂)⁻¹ = R₂⁻¹∘R₁⁻¹ := by
+  apply setext
+  intro x
+  apply Iff.intro <;>
+  {
+    intro h;
+    exact comp_comm h
+  }
+
 end Relation
