@@ -77,7 +77,7 @@ def comp : Relation α γ := { t | ∃ a, (t.fst, a) ∈ R ∧ (a, t.snd) ∈ S}
 
 infixr:60 "∘" => comp
 
-theorem comp_comm {R₁ R₂ : Set α} : (∃ x, R₁ x ∧ R₂ x) → ∃ x, R₂ x ∧ R₁ x := by
+theorem comp_comm {R₁ R₂ : Set α} : (∃ x, x ∈ R₁ ∧ x ∈ R₂) → ∃ x, x ∈ R₂ ∧ x ∈ R₁ := by
   intro h
   cases h with
   | intro x hR₂ =>
