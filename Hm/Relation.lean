@@ -84,11 +84,8 @@ theorem comp_inverse_distrib {R₁ R₂: RelationOn α} : (R₁∘R₂)⁻¹ = R
   {
     intro h;
     cases h with
-    | intro x hR₂ =>
-      cases hR₂ with
-      | intro hR₁ hR₂ =>
-        exists x
-        exact And.intro hR₂ hR₁
+    | intro y h₂ =>
+      exact Exists.intro y (And.intro h₂.right h₂.left)
   }
 
 end Relation
