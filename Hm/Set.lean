@@ -54,6 +54,9 @@ def powerset (s : Set α) : Set (Set α) := {t | t ⊆ s}
 
 prefix:60 "𝒫" => powerset
 
+def cartesian (s₁ : Set α) (s₂ : Set β) : Set (α × β) :=
+  {t | t.fst ∈ s₁ ∧ t.snd ∈ s₂}
+
 -- This section provides usability lemmas so people don't have to
 -- see the guts of the definition they are working with.
 section usability
@@ -79,6 +82,10 @@ theorem mem_compl (x : α) (A : Set α) : x ∈ Aᶜ ↔ x ∉ A :=
   Iff.intro (λ h1 h2 => h1.right h2) (λ h => ⟨True.intro, h⟩)
 
 theorem mem_powerset (A B : Set α) : A ∈ (𝒫 B) ↔ A ⊆ B := Iff.rfl
+
+theorem mem_cartesian (x : α × β) (A : Set α) (B : Set β) : x ∈ cartesian A B ↔ x.fst ∈ A ∧ x.snd ∈ B := Iff.rfl
+
+theorem mem_cartesian_of_left_right (x : α × β) (A : Set α) (B : Set β) : x.fst ∈ A → x.snd ∈ B → x ∈ cartesian A B := And.intro
 
 end usability
 
@@ -186,9 +193,7 @@ theorem sdiff_inter_eq_sdiff {A B : Set α} : A \ (A ∩ B) = A \ B := by
 
 theorem any_subseteq_univ (A : Set α) : A ⊆ univ := λ _ _ => True.intro
 
-def cartesian (s₁ : Set α) (s₂ : Set β) : Set (α × β) :=
-  {t | t.fst ∈ s₁ ∧ t.snd ∈ s₂}
-  
+
 theorem any_subseteq_cartesian_univ_univ (A : Set (α × α)) :  A ⊆ cartesian Set.univ Set.univ := by
   intro _ _
   apply And.intro <;> exact True.intro
