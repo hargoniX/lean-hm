@@ -67,14 +67,79 @@ example : reflexive (Nat.le : RelationOn Nat) := λ _ => Nat.le.refl
 
 namespace Relation
 
-variable (R: Relation α β) (S : Relation β γ)
-
-def inverse : Relation β α := {t | (t.snd, t.fst) ∈ R}
+def inverse (R : Relation α β) : Relation β α := {t | (t.snd, t.fst) ∈ R}
 
 postfix:max "⁻¹" => inverse
 
-def comp : Relation α γ := { t | ∃ a, (t.fst, a) ∈ R ∧ (a, t.snd) ∈ S}
+def comp (R : Relation α β) (S : Relation β γ) : Relation α γ := { t | ∃ a, (t.fst, a) ∈ R ∧ (a, t.snd) ∈ S}
 
 infixr:60 "∘" => comp
+
+section usability
+
+theorem mem_inverse (R : Relation α β) : x ∈ R⁻¹ ↔ (x.snd, x.fst) ∈ R := Iff.rfl
+
+theorem mem_comp (x : α × γ) (R : Relation α β) (S : Relation β γ) : (x ∈ R∘S) ↔ (∃ a, (x.fst, a) ∈ R ∧ (a, x.snd) ∈ S) := ⟨id, id⟩
+
+theorem mem_comp_of_left_right (a : β) (x : α × γ) (R : Relation α β) (S : Relation β γ) : (x.fst, a) ∈ R → (a, x.snd) ∈ S → x ∈ R ∘ S := by
+  intro hr hs
+  exact Exists.intro a $ And.intro hr hs
+
+end usability
+
+theorem comp_inverse_distrib {R₁ R₂: RelationOn α} : (R₁∘R₂)⁻¹ = R₂⁻¹∘R₁⁻¹ := by
+  apply setext
+  intro x
+  apply Iff.intro <;>
+  {
+    intro h;
+    cases h with
+    | intro y h₂ =>
+      exact Exists.intro y ⟨h₂.right, h₂.left⟩
+  }
+
+-- Alternative proof that shows steps in more detail
+example {R₁ R₂: RelationOn α} : (R₁∘R₂)⁻¹ = R₂⁻¹∘R₁⁻¹ := by
+  apply setext
+  intro x
+  apply Iff.intro
+  case h.mp =>
+    intro h
+    rw [mem_inverse, mem_comp] at h
+    simp at h
+    apply Exists.elim h
+    intro a ha
+    apply mem_comp_of_left_right a x
+    case a =>
+      rw [mem_inverse]
+      simp
+      exact ha.right
+    case a =>
+      rw [mem_inverse]
+      simp
+      exact ha.left
+  case h.mpr =>
+    intro h
+    rw [mem_inverse, mem_comp]
+    simp
+    rw [mem_comp] at h
+    apply Exists.elim h
+    intro a ha
+    rw [mem_inverse, mem_inverse] at ha
+    simp at ha
+    exists a
+    exact And.intro ha.right ha.left
+
+theorem rel_and_rel_impl_comp {R S : RelationOn α} {A B C : Set α} :
+  R ⊆ (cartesian A B) ∧ S ⊆ (cartesian B C) → (R ∘ S) ⊆ (cartesian A C) := by
+    intro h x comp
+    rw [mem_comp] at comp
+    apply Exists.elim comp
+    intro a ha
+    apply mem_cartesian_of_left_right x A C
+    case a =>
+      exact And.left $ h.left (x.fst, a) ha.left
+    case a =>
+      exact And.right $ h.right (a, x.snd) ha.right
 
 end Relation
