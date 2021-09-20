@@ -29,3 +29,7 @@ structure SubGroup (G : Type _) [Group G] :=
   (one_mem: 1 ∈ carrier)
   (mul_mem: ∀ a b, a ∈ carrier → b ∈ carrier → a * b ∈ carrier)
   (inv_mem: ∀ a, a ∈ carrier → a⁻¹ ∈ carrier)
+
+-- This allows us to write a ∈ G for G : SubGroup α
+instance SubGroupToCarrier [Group α] : Coe (SubGroup α) (Set α) where
+  coe G := G.carrier
